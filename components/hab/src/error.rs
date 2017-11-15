@@ -53,8 +53,10 @@ pub enum Error {
     HandlebarsRenderError(handlebars::TemplateRenderError),
     IO(io::Error),
     JobGroupPromote(api_client::Error),
+    JobGroupDemote(api_client::Error),
     JobGroupCancel(api_client::Error),
     JobGroupPromoteUnprocessable,
+    JobGroupDemoteUnprocessable,
     PackageArchiveMalformed(String),
     ParseIntError(num::ParseIntError),
     PathPrefixError(path::StripPrefixError),
@@ -137,7 +139,11 @@ impl fmt::Display for Error {
             Error::JobGroupPromoteUnprocessable => {
                 format!("Failed to promote job group, the build job is still in progress")
             }
+            Error::JobGroupDemoteUnprocessable => {
+                format!("Failed to demote job group, the build job is still in progress")
+            }
             Error::JobGroupPromote(ref e) => format!("Failed to promote job group: {:?}", e),
+            Error::JobGroupDemote(ref e) => format!("Failed to demote job group: {:?}", e),
             Error::JobGroupCancel(ref e) => format!("Failed to cancel job group: {:?}", e),
             Error::PackageArchiveMalformed(ref e) => {
                 format!(
@@ -193,7 +199,11 @@ impl error::Error for Error {
             Error::JobGroupPromoteUnprocessable => {
                 "Failed to promote job group, the build job is still in progress"
             }
-            Error::JobGroupPromote(ref err) => err.description(),
+            Error::JobGroupDemoteUnprocessable => {
+                "Failed to demote job group, the build job is still in progress"
+            }
+            Error::JobGroupPromote(ref err) |
+            Error::JobGroupDemote(ref err) => err.description(),
             Error::JobGroupCancel(ref err) => err.description(),
             Error::PackageArchiveMalformed(_) => {
                 "Package archive was unreadable or had unexpected contents"

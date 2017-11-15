@@ -14,5 +14,6 @@
 
 pub mod cancel;
 pub mod promote;
+pub mod demote;
 pub mod start;
 pub mod status;

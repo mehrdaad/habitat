@@ -71,6 +71,7 @@ pub enum SrvError {
     OriginPackagePlatformList(postgres::error::Error),
     OriginPackageList(postgres::error::Error),
     OriginPackageVersionList(postgres::error::Error),
+    OriginPackageGroupDemote(postgres::error::Error),
     OriginPackageDemote(postgres::error::Error),
     OriginPackageGroupPromote(postgres::error::Error),
     OriginPackagePromote(postgres::error::Error),
@@ -228,6 +229,9 @@ impl fmt::Display for SrvError {
                     e
                 )
             }
+            SrvError::OriginPackageGroupDemote(ref e) => {
+                format!("Error demoting package group to channel, {}", e)
+            }
             SrvError::OriginPackageDemote(ref e) => {
                 format!("Error demoting package from channel, {}", e)
             }
@@ -369,6 +373,7 @@ impl error::Error for SrvError {
             SrvError::OriginPackagePlatformList(ref err) => err.description(),
             SrvError::OriginPackageList(ref err) => err.description(),
             SrvError::OriginPackageVersionList(ref err) => err.description(),
+            SrvError::OriginPackageGroupDemote(ref err) => err.description(),
             SrvError::OriginPackageDemote(ref err) => err.description(),
             SrvError::OriginPackageGroupPromote(ref err) => err.description(),
             SrvError::OriginPackagePromote(ref err) => err.description(),

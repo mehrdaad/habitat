@@ -182,6 +182,39 @@ impl Client {
         Ok(())
     }
 
+    /// Demote a job group to a channel
+    ///
+    /// # Failures
+    ///
+    /// * Remote API Server is not available
+    pub fn job_group_demote<T: AsRef<str> + serde::Serialize>(
+        &self,
+        group_id: u64,
+        idents: &[T],
+        channel: &str,
+        token: &str,
+    ) -> Result<()> {
+        let json_idents = json!(idents);
+        let body = json!({
+            "idents": json_idents
+        });
+        let sbody = serde_json::to_string(&body).unwrap();
+        let url = format!("jobs/group/{}/demote/{}", group_id, channel);
+        let res = self.add_authz(self.0.post(&url), token)
+            .body(&sbody)
+            .header(Accept::json())
+            .header(ContentType::json())
+            .send()
+            .map_err(Error::HyperError)?;
+
+        if res.status != StatusCode::Ok {
+            debug!("Failed to demote group, status: {:?}", res.status);
+            return Err(err_from_response(res));
+        }
+
+        Ok(())
+    }
+
     /// Cancel a job group
     ///
     /// # Failures

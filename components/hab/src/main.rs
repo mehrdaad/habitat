@@ -136,6 +136,7 @@ fn start(ui: &mut UI) -> Result<()> {
                         ("start", Some(m)) => sub_bldr_job_start(ui, m)?,
                         ("cancel", Some(m)) => sub_bldr_job_cancel(ui, m)?,
                         ("promote", Some(m)) => sub_bldr_job_promote(ui, m)?,
+                        ("demote", Some(m)) => sub_bldr_job_demote(ui, m)?,
                         ("status", Some(m)) => sub_bldr_job_status(ui, m)?,
                         _ => unreachable!(),
                     }
@@ -433,6 +434,26 @@ fn sub_bldr_job_promote(ui: &mut UI, m: &ArgMatches) -> Result<()> {
     let verbose = m.is_present("VERBOSE");
     let token = auth_token_param_or_env(&m)?;
     command::bldr::job::promote::start(
+        ui,
+        &url,
+        &group_id,
+        &channel,
+        origin,
+        interactive,
+        verbose,
+        &token,
+    )
+}
+
+fn sub_bldr_job_demote(ui: &mut UI, m: &ArgMatches) -> Result<()> {
+    let url = bldr_url_from_matches(m);
+    let group_id = m.value_of("GROUP_ID").unwrap(); // Required via clap
+    let channel = m.value_of("CHANNEL").unwrap(); // Required via clap
+    let origin = m.value_of("ORIGIN");
+    let interactive = m.is_present("INTERACTIVE");
+    let verbose = m.is_present("VERBOSE");
+    let token = auth_token_param_or_env(&m)?;
+    command::bldr::job::demote::start(
         ui,
         &url,
         &group_id,

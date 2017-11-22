@@ -20,6 +20,20 @@ if ! exists curl; then
   exit 1
 fi
 
+if ! exists hab; then
+  echo "The Habitat CLI is required to run the integration tests. Please ensure it's installed and try again."
+  exit 1
+fi
+
+if exists md5sum; then
+  md5=md5sum
+elif exists md5; then
+  md5=md5
+else
+  echo "A program to calculate the md5 hash of a string is required to run the integration tests. Please sort this out and try again."
+  exit 1
+fi
+
 # First make sure that we have services already compiled to test.
 cd $base_dir
 
@@ -27,10 +41,19 @@ cd $base_dir
 #make build-srv || exit $?
 cd $tmp_dir
 
-name=$(date | md5sum | awk '{ print $1 }')
+if [[ $(uname -a) == *"Darwin"* ]]; then
+  platform="mac"
+else
+  platform="linux"
+fi
+
+name=$(date | $md5 | awk '{ print $1 }')
 dir="$tmp_dir/$name"
 key_dir="$dir/key-dir"
+
 mkdir -p $dir $key_dir
+
+env HAB_CACHE_KEY_PATH=$key_dir hab user key generate bldr
 
 # Install pg_tmp if it's not there already
 if ! exists pg_tmp; then
@@ -55,7 +78,7 @@ fi
 
 # This will produce a URI that looks like
 # postgresql://hab@127.0.0.1:39605/test
-pg=$(su -c "pg_tmp -t -w 240 -o \"-c max_locks_per_transaction=128\"" hab)
+pg=$(sudo su hab -c "pg_tmp -t -w 240 -o \"-c max_locks_per_transaction=128\"")
 port=$(echo "$pg" | awk -F ":" '{ print $3 }' | awk -F "/" '{ print $1 }')
 
 # Write out some config files
@@ -147,11 +170,16 @@ RUST_BACKTRACE=1
 HAB_DOCKER_STUDIO_IMAGE="habitat-docker-registry.bintray.io/studio"
 EOF
 
-# TODO JB: Probably need to generate a box key pair at some point
 # TODO JB: Probably need to grab the GH dev key too or lots of stuff will likely break
 
 # Start all the services up
-env HAB_FUNC_TEST=1 $base_dir/support/linux/bin/forego start -f "$dir/Procfile" -e "$dir/bldr.env" > "$dir/services.log" 2>&1 &
+
+if [ "$platform" = "mac" ]; then
+  env HAB_FUNC_TEST=1 "$base_dir/support/mac/bin/forego" start -f "$dir/Procfile" -e "$dir/bldr.env" > "$dir/services.log" 2>&1 &
+else
+  env HAB_FUNC_TEST=1 "$base_dir/support/linux/bin/forego" start -f "$dir/Procfile" -e "$dir/bldr.env" > "$dir/services.log" 2>&1 &
+fi
+
 forego_pid=$!
 
 echo "**** Spinning up the services ****"
@@ -165,14 +193,15 @@ worker=0
 
 while [ $total -ne 6 ]; do
   for svc in originsrv sessionsrv router api jobsrv worker; do
-    echo "$svc = ${!svc}"
     if grep -q "builder-$svc is ready to go" "$dir/services.log"; then
       declare "$svc=1"
+    else
+      echo "Waiting on $svc"
     fi
   done
 
   total=$(($originsrv + $sessionsrv + $router + $api + $jobsrv + $worker))
-  echo "total = $total"
+
   echo ""
   sleep 1
 done

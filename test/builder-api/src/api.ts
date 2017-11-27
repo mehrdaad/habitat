@@ -7,6 +7,6 @@ import "./origins";
 
 // `session_bobo` = the bobo session
 // `session_logan` = the logan session
-import "./sessions";
+// import "./sessions";
 
-import "./invitations";
+// import "./invitations";

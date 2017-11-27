@@ -188,7 +188,11 @@ impl BeforeMiddleware for Authenticated {
                     // Check to see if this is a valid github token, and create (or
                     // update) a session. This is a temporary fix until we can roll out
                     // and migrate clients to our own personal access tokens.
-                    session_create_github(req, token)?
+                    if env::var_os("HAB_FUNC_TEST").is_some() {
+                        session_create_short_circuit(req, token)?
+                    } else {
+                        session_create_github(req, token)?
+                    }
                 }
             } else {
                 let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:3");

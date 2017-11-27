@@ -4,7 +4,7 @@ import supertest = require('supertest');
 const request = supertest('http://localhost:9636/v1');
 const globalAny:any = global;
 
-describe('Origin API', function() { 
+describe('Origin API', function() {
   describe('Create origin neurosis', function() {
     it('returns the created origin', function(done) {
       request.post('/depot/origins')
@@ -26,20 +26,6 @@ describe('Origin API', function() {
         .expect(200)
         .end(function(err, res) {
           expect(res.body).to.deep.equal(globalAny.origin_neurosis);
-          done(err);
-        });
-    });
-  });
-
-  describe('Create origin xmen', function() {
-    it('returns the created origin', function(done) {
-      request.post('/depot/origins')
-        .set('Authorization', globalAny.logan_bearer)
-        .send({"name": "xmen"})
-        .expect(201)
-        .end(function(err, res) {
-          expect(res.body.name).to.equal("xmen");
-          globalAny.origin_xmen = res.body;
           done(err);
         });
     });

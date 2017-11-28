@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use base64;
+use core::env;
 use github_api_client::{GitHubCfg, GitHubClient, HubError};
 use hab_net::{ErrCode, NetError};
 use hab_net::conn::RouteClient;
@@ -189,7 +190,7 @@ impl BeforeMiddleware for Authenticated {
                     // update) a session. This is a temporary fix until we can roll out
                     // and migrate clients to our own personal access tokens.
                     if env::var_os("HAB_FUNC_TEST").is_some() {
-                        session_create_short_circuit(req, token)?
+                        session_create_short_circuit(req, &token)?
                     } else {
                         session_create_github(req, token)?
                     }

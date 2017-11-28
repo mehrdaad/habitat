@@ -1,19 +1,17 @@
-import { expect } from 'chai';
-import supertest = require('supertest');
-
+const expect = require('chai').expect;
+const supertest = require('supertest');
 const request = supertest('http://localhost:9636/v1');
-const globalAny:any = global;
 
 describe('Origin API', function() {
   describe('Create origin neurosis', function() {
     it('returns the created origin', function(done) {
       request.post('/depot/origins')
-        .set('Authorization', globalAny.bobo_bearer)
+        .set('Authorization', global.boboBearer)
         .send({"name": "neurosis"})
         .expect(201)
         .end(function(err, res) {
           expect(res.body.name).to.equal("neurosis");
-          globalAny.origin_neurosis = res.body;
+          global.originNeurosis = res.body;
           done(err);
         });
     });
@@ -22,10 +20,10 @@ describe('Origin API', function() {
   describe('Get origin neurosis', function() {
     it('returns the origin', function(done) {
       request.get('/depot/origins/neurosis')
-        .set('Authorization', globalAny.bobo_bearer)
+        .set('Authorization', global.boboBearer)
         .expect(200)
         .end(function(err, res) {
-          expect(res.body).to.deep.equal(globalAny.origin_neurosis);
+          expect(res.body).to.deep.equal(global.originNeurosis);
           done(err);
         });
     });

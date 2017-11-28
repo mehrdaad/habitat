@@ -1,9 +1,9 @@
 // Sets up the framework
-import "./helpers";
+require('./helpers.js');
 
 // `origin_neurosis` = the neurosis origin
 // `origin_xmen` = the xmen origin
-import "./origins";
+require('./origins.js');
 
 // `session_bobo` = the bobo session
 // `session_logan` = the logan session

@@ -179,8 +179,27 @@ impl BeforeMiddleware for Authenticated {
             }
         };
 
+        debug!("******** HAHA token = {:?}", &token);
+
         let session = {
+            // This line of code is fundamentally broken right now, given that we're not returning
+            // base64 encoded session tokens from our session server. It's a happy coincidence that
+            // the GH auth tokens we _are_ using are a multiple of 4 in length (40) and don't end
+            // in an =, which means that base64::decode succeeds, but decoded_token != token. They
+            // are totally different and decoded_token is _not_ valid for anything the way sessions
+            // are setup right now. That's why we ignore it below when we call
+            // session_create_github. If we are going to mix and match GH auth tokens with our own
+            // base64 encoded session tokens then we can't assume this line of code will continue
+            // to work, because it won't. We need to differentiate between the two tokens and route
+            // accordingly. Interestingly enough, integration testing revealed this bug because one
+            // of the test tokens was 5 characters in length and didn't end in = or ==, so base64
+            // decoding it barfed.
             if let Ok(decoded_token) = base64::decode(&token) {
+                debug!(
+                    "******** HAHA decoding succeeded. decoded_token = {:?}",
+                    &decoded_token
+                );
+
                 if let Ok(token) = message::decode(&decoded_token) {
                     self.authenticate(req, token)?
                 } else {
@@ -196,6 +215,7 @@ impl BeforeMiddleware for Authenticated {
                     }
                 }
             } else {
+                debug!("******** HAHA couldn't base64 decode {:?}", &token);
                 let err = NetError::new(ErrCode::BAD_TOKEN, "net:auth:3");
                 return Err(IronError::new(err, Status::Forbidden));
             }
@@ -292,11 +312,11 @@ pub fn session_create_short_circuit(req: &mut Request, token: &str) -> IronResul
             request.set_provider(OAuthProvider::GitHub);
             request
         }
-        "logan" => {
+        "mystique" => {
             let mut request = SessionCreate::new();
             request.set_extern_id(1);
-            request.set_email("logan@example.com".to_string());
-            request.set_name("logan".to_string());
+            request.set_email("mystique@example.com".to_string());
+            request.set_name("mystique".to_string());
             request.set_provider(OAuthProvider::GitHub);
             request
         }

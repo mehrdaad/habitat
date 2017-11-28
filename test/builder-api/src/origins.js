@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const request = supertest('http://localhost:9636/v1');
 
 describe('Origin API', function() {
-  describe('Create origin', function() {
+  describe('Create neurosis origin', function() {
     it('returns the created origin', function(done) {
       request.post('/depot/origins')
         .set('Authorization', global.boboBearer)
@@ -12,18 +12,6 @@ describe('Origin API', function() {
         .end(function(err, res) {
           expect(res.body.name).to.equal('neurosis');
           global.originNeurosis = res.body;
-          done(err);
-        });
-    });
-
-    it('returns the created origin again', function(done) {
-      request.post('/depot/origins')
-        .set('Authorization', global.loganBearer)
-        .send({'name': 'xmen'})
-        .expect(201)
-        .end(function(err, res) {
-          expect(res.body.name).to.equal('xmen');
-          global.originXmen = res.body;
           done(err);
         });
     });
@@ -36,6 +24,20 @@ describe('Origin API', function() {
         .expect(200)
         .end(function(err, res) {
           expect(res.body).to.deep.equal(global.originNeurosis);
+          done(err);
+        });
+    });
+  });
+
+  describe('Create xmen origin', function() {
+    it('returns the created origin again', function(done) {
+      request.post('/depot/origins')
+        .set('Authorization', global.mystiqueBearer)
+        .send({'name': 'xmen'})
+        .expect(201)
+        .end(function(err, res) {
+          expect(res.body.name).to.equal('xmen');
+          global.originXmen = res.body;
           done(err);
         });
     });

@@ -14,12 +14,12 @@ describe('Authenticate API', function() {
         });
     });
 
-    it('returns logan', function(done) {
-      request.get('/authenticate/logan')
+    it('returns mystique', function(done) {
+      request.get('/authenticate/mystique')
         .expect(200)
         .end(function(err, res) {
-          expect(res.body.name).to.equal('logan');
-          global.sessionLogan = res.body;
+          expect(res.body.name).to.equal('mystique');
+          global.sessionMystique = res.body;
           done(err);
         });
     });

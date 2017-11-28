@@ -68,6 +68,9 @@ fn start(ui: &mut UI) -> Result<()> {
     debug!("clap cli args: {:?}", m);
     let default_channel = channel::default();
     let default_url = hurl::default_bldr_url();
+
+    let default_user_id: u32 = 42;
+
     let registry_type = m.value_of("REGISTRY_TYPE").unwrap_or("docker");
     let registry_url = m.value_of("REGISTRY_URL");
 
@@ -82,6 +85,14 @@ fn start(ui: &mut UI) -> Result<()> {
         base_pkgs_url: m.value_of("BASE_PKGS_BLDR_URL").unwrap_or(&default_url),
         base_pkgs_channel: m.value_of("BASE_PKGS_CHANNEL").unwrap_or(&default_channel),
         idents_or_archives: m.values_of("PKG_IDENT_OR_ARTIFACT").unwrap().collect(),
+        user_id: match m.value_of("USER_ID") {
+            Some(i) => {
+                // unwrap OK because validation function ensures it
+                i.parse::<u32>().unwrap()
+            }
+            None => default_user_id,
+        },
+        non_root: m.is_present("NON_ROOT"),
     };
     let naming = Naming {
         custom_image_name: m.value_of("IMAGE_NAME"),
@@ -164,6 +175,12 @@ fn cli<'a, 'b>() -> App<'a, 'b> {
         (@arg PKG_IDENT_OR_ARTIFACT: +required +multiple
             "One or more Habitat package identifiers (ex: acme/redis) and/or filepaths \
             to a Habitat Artifact (ex: /home/acme-redis-3.0.7-21120102031201-x86_64-linux.hart)")
+
+        // Image details
+        (@arg USER_ID: --("user-id") -i +takes_value {valid_user_id}
+            "Specify the numeric ID of the service user and group (default: 42)")
+        (@arg NON_ROOT: --("non-root")
+            "Run the container as a non-root user (default: false)")
 
         // Builder
         (@arg BLDR_URL: --url -u +takes_value {valid_url}
@@ -270,5 +287,16 @@ fn valid_url(val: String) -> result::Result<(), String> {
     match Url::parse(&val) {
         Ok(_) => Ok(()),
         Err(_) => Err(format!("URL: '{}' is not valid", &val)),
+    }
+}
+
+fn valid_user_id(val: String) -> result::Result<(), String> {
+    match val.parse::<u32>() {
+        Ok(_) => {
+            // TODO (CM): need to filter out problematic
+            // values (e.g., 0, existing user/group IDs)
+            Ok(())
+        }
+        Err(_) => Err(format!("User ID: '{}' is not valid", &val)),
     }
 }

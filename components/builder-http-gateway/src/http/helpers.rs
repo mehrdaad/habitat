@@ -259,6 +259,7 @@ where
     T: ToString,
 {
     if is_worker(req) {
+        debug!("************** HAHA {:?} is a worker", &req);
         return Ok(true);
     }
 

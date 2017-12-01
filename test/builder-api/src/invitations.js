@@ -92,7 +92,7 @@ describe('Origin Invitations API', function() {
         });
     });
 
-    it('xmen shows up in bobos list of organizations', function(done) {
+    it('xmen shows up in bobos origins', function(done) {
       request.get('/user/origins')
         .set('Authorization', global.boboBearer)
         .expect(200)

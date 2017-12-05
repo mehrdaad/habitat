@@ -1596,6 +1596,11 @@ fn list_channels(req: &mut Request) -> IronResult<Response> {
                 .collect();
             let body = serde_json::to_string(&list).unwrap();
             let mut response = Response::with((status::Ok, body));
+            response.headers.set(ContentType(Mime(
+                TopLevel::Application,
+                SubLevel::Json,
+                vec![(Attr::Charset, Value::Utf8)],
+            )));
             dont_cache_response(&mut response);
             Ok(response)
         }

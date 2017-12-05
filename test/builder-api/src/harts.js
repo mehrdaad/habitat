@@ -22,8 +22,8 @@ describe('Working with hart files', function() {
     it('allows authenticated users to upload files', function(done) {
       request.post('/depot/pkgs/neurosis/testapp/0.1.3/20171205003213')
         .set('Authorization', global.boboBearer)
-        .query({checksum: '3138777020e7bb621a510b19c2f2630deee9b34ac11f1c2a0524a44eb977e4a8'})
         .set('Content-Length', data.length)
+        .query({checksum: '3138777020e7bb621a510b19c2f2630deee9b34ac11f1c2a0524a44eb977e4a8'})
         .send(data)
         .expect(201)
         .end(function(err, res) {

@@ -549,12 +549,6 @@ pub fn list_user_origins(req: &mut Request) -> IronResult<Response> {
 /// Create a new project as the authenticated user and associated to
 /// the given origin.
 pub fn project_create(req: &mut Request) -> IronResult<Response> {
-    debug!(
-        "XXX in project_create; json: {:?}",
-        // req,
-        req.get::<bodyparser::Raw>().unwrap().unwrap()
-    );
-
     let mut request = OriginProjectCreate::new();
     let mut project = OriginProject::new();
     let mut origin_get = OriginGet::new();
@@ -564,14 +558,12 @@ pub fn project_create(req: &mut Request) -> IronResult<Response> {
     let (token, repo_id) = match req.get::<bodyparser::Struct<ProjectCreateReq>>() {
         Ok(Some(body)) => {
             if body.origin.len() <= 0 {
-                debug!("XXX Missing value for field: `origin`");
                 return Ok(Response::with((
                     status::UnprocessableEntity,
                     "Missing value for field: `origin`",
                 )));
             }
             if body.plan_path.len() <= 0 {
-                debug!("XXX Missing value for field: `plan_path`");
                 return Ok(Response::with((
                     status::UnprocessableEntity,
                     "Missing value for field: `plan_path`",
@@ -605,13 +597,9 @@ pub fn project_create(req: &mut Request) -> IronResult<Response> {
             }
             (token, body.repo_id)
         }
-        _ => {
-            debug!("XXX catch all; req.get didn't return Ok(Some(body))`");
-            return Ok(Response::with(status::UnprocessableEntity));
-        }
+        _ => return Ok(Response::with(status::UnprocessableEntity));
     };
 
-    debug!("XXX midway through project_create");
     let origin = match route_message::<OriginGet, Origin>(req, &origin_get) {
         Ok(response) => response,
         Err(err) => return Ok(render_net_error(&err)),
